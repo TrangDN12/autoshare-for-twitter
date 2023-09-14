@@ -195,8 +195,15 @@ function compose_tweet_body( \WP_Post $post ) {
 	 */
 	$url = apply_filters( 'autoshare_for_twitter_post_url', get_the_permalink( $post->ID ), $post );
 
+	$_post = $post;
+	$tag_instances = get_the_tags($_post);
+	$post_tags = PHP_EOL;
+	foreach ($tag_instances as $tag) {
+		$post_tags .= "#" . $tag->name . PHP_EOL;
+	}
+
 	$url               = esc_url( $url );
-	$body_max_length   = 275 - strlen( $url ); // 275 instead of 280 because of the space between body and URL and the ellipsis.
+	$body_max_length   = 275 - strlen( $url ) - strlen( $post_tags ); // 275 instead of 280 because of the space between body and URL and the ellipsis.
 	$tweet_body        = sanitize_text_field( $tweet_body );
 	$tweet_body        = html_entity_decode( $tweet_body, ENT_QUOTES, get_bloginfo( 'charset' ) );
 	$tweet_body_length = strlen( $tweet_body );
@@ -218,6 +225,8 @@ function compose_tweet_body( \WP_Post $post ) {
 		$tweet_body        = implode( ' ', $tweet_words );
 		$tweet_body_length = strlen( $tweet_body );
 	}
+
+	$tweet_body .= $post_tags;
 
 	return sprintf( '%s%s %s', $tweet_body, $ellipsis, $url );
 }
